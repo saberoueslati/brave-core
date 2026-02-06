@@ -238,6 +238,18 @@ const braveAndroidQuickSearchEnginesStringsPath = path.resolve(
     'android_quick_search_engines_strings.grd',
   ),
 )
+const braveAndroidCustomSearchEngineStringsPath = path.resolve(
+  path.join(
+    srcDir,
+    'brave',
+    'browser',
+    'custom_search_engines',
+    'android',
+    'java',
+    'strings',
+    'android_custom_search_engine_strings.grd',
+  ),
+)
 
 // Cache for pre-computed values.
 const _memoizeCache = new Map()
@@ -407,6 +419,7 @@ const l10nUtil = {
         braveExtensionMessagesPath,
         braveAndroidBraveStringsPath,
         braveAndroidQuickSearchEnginesStringsPath,
+        braveAndroidCustomSearchEngineStringsPath,
       ]
     })
   },

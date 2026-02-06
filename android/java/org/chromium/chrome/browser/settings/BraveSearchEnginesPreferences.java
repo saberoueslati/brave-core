@@ -7,14 +7,18 @@ package org.chromium.chrome.browser.settings;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 
 import org.chromium.base.supplier.MonotonicObservableSupplier;
 import org.chromium.base.supplier.ObservableSuppliers;
 import org.chromium.base.supplier.SettableMonotonicObservableSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.brave.browser.custom_search_engines.CustomSearchEnginesPrefManager;
+import org.chromium.brave.browser.custom_search_engines.settings.CustomSearchEnginesPreference;
 import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveConfig;
@@ -25,6 +29,8 @@ import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.web_discovery.WebDiscoveryPrefs;
 
+import java.util.List;
+
 public class BraveSearchEnginesPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
     private static final String PREF_STANDARD_SEARCH_ENGINE = "standard_search_engine";
@@ -34,6 +40,10 @@ public class BraveSearchEnginesPreferences extends BravePreferenceFragment
     private static final String PREF_SHOW_AUTOCOMPLETE_IN_ADDRESS_BAR =
             "show_autocomplete_in_address_bar";
     private static final String PREF_SEND_WEB_DISCOVERY = "send_web_discovery";
+
+    private static final String PREF_CUSTOM_SEARCH_ENGINES_CATEGORY =
+            "custom_search_engines_category";
+    private static final String PREF_CUSTOM_SEARCH_ENGINE_LIST = "custom_search_engine_list";
 
     private ChromeManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -75,6 +85,50 @@ public class BraveSearchEnginesPreferences extends BravePreferenceFragment
         Preference preference = getPreferenceScreen().findPreference(key);
         if (preference != null) {
             getPreferenceScreen().removePreference(preference);
+        }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        updateCustomSearchEnginesPreference();
+    }
+
+    private void updateCustomSearchEnginesPreference() {
+        List<String> searchEngines =
+                CustomSearchEnginesPrefManager.getInstance().getCustomSearchEngines();
+
+        if (searchEngines == null || searchEngines.isEmpty()) {
+            removeCustomSearchEnginesPreference();
+            return;
+        }
+
+        PreferenceCategory preferenceCategory =
+                (PreferenceCategory) findPreference(PREF_CUSTOM_SEARCH_ENGINES_CATEGORY);
+        Preference customSearchEnginesListPreference =
+                findPreference(PREF_CUSTOM_SEARCH_ENGINE_LIST);
+
+        if (customSearchEnginesListPreference != null
+                && customSearchEnginesListPreference instanceof CustomSearchEnginesPreference) {
+            ((CustomSearchEnginesPreference) customSearchEnginesListPreference)
+                    .updateCustomSearchEngines();
+        } else if (preferenceCategory != null) {
+            CustomSearchEnginesPreference newPreference =
+                    new CustomSearchEnginesPreference(requireContext());
+            newPreference.initialize(getProfile());
+            newPreference.setKey(PREF_CUSTOM_SEARCH_ENGINE_LIST);
+            newPreference.setOrder(1);
+            preferenceCategory.addPreference(newPreference);
+        }
+    }
+
+    private void removeCustomSearchEnginesPreference() {
+        PreferenceCategory preferenceCategory =
+                (PreferenceCategory) findPreference(PREF_CUSTOM_SEARCH_ENGINES_CATEGORY);
+        Preference customSearchEnginesListPreference =
+                findPreference(PREF_CUSTOM_SEARCH_ENGINE_LIST);
+        if (preferenceCategory != null && customSearchEnginesListPreference != null) {
+            preferenceCategory.removePreference(customSearchEnginesListPreference);
         }
     }
 
@@ -165,6 +219,15 @@ public class BraveSearchEnginesPreferences extends BravePreferenceFragment
         } else {
             removePreferenceIfPresent(PREF_SEND_WEB_DISCOVERY);
         }
+
+        Preference customSearchEnginesListPreference =
+                findPreference(PREF_CUSTOM_SEARCH_ENGINE_LIST);
+        if (customSearchEnginesListPreference != null
+                && customSearchEnginesListPreference instanceof CustomSearchEnginesPreference) {
+            ((CustomSearchEnginesPreference) customSearchEnginesListPreference)
+                    .updateCustomSearchEngines();
+        }
+        updateCustomSearchEnginesPreference();
     }
 
     @Override
