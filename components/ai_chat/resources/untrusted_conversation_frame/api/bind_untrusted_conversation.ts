@@ -15,6 +15,8 @@ export async function bindUntrustedConversation() {
   const conversationHandler = new Mojom.UntrustedConversationHandlerRemote()
   const uiHandler = Mojom.UntrustedUIHandler.getRemote()
   const parentUIFrame = new Mojom.ParentUIFrameRemote()
+  // Service is bound directly to the WebUI via the interface broker
+  const service = Mojom.UntrustedService.getRemote()
 
   // This frame gets the conversation ID from the URL
   const conversationId = window.location.pathname.split('/').pop() || ''
@@ -30,6 +32,7 @@ export async function bindUntrustedConversation() {
     conversationHandler,
     uiHandler,
     parentUIFrame,
+    service,
   )
 
   const uiReceiver = new Mojom.UntrustedUIReceiver(conversationAPI.uiObserver)
@@ -43,6 +46,14 @@ export async function bindUntrustedConversation() {
       conversationUIReceiver.$.bindNewPipeAndPassRemote(),
     )
 
+  // Bind the service observer and get initial service state
+  const serviceObserverReceiver = new Mojom.UntrustedServiceObserverReceiver(
+    conversationAPI.serviceObserver,
+  )
+  const { state: serviceState } = await service.bindObserver(
+    serviceObserverReceiver.$.bindNewPipeAndPassRemote(),
+  )
+
   // Set initial state
   // Emit the event instead of directly updating the store so that any custom
   // handling (e.g. model filtering) happens and we don't need to duplicate
@@ -50,6 +61,8 @@ export async function bindUntrustedConversation() {
   conversationAPI.api.emitEvent('onEntriesUIStateChanged', [
     conversationEntriesState,
   ])
+  // Set initial service state
+  conversationAPI.api.emitEvent('onStateChanged', [serviceState])
 
   return {
     api: conversationAPI.api,
@@ -57,6 +70,7 @@ export async function bindUntrustedConversation() {
       conversationAPI.close()
       conversationUIReceiver.$.close()
       uiReceiver.$.close()
+      serviceObserverReceiver.$.close()
     },
   }
 }
