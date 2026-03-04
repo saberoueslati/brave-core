@@ -807,6 +807,23 @@
 # This test fails because we disable installing the Captcha Provider component
 -CaptchaProviderComponentInstallerPolicyTest.ComponentRegistered
 
+# Temporarily disable these test due to them crashing when
+# BrowserTabStripTracker in BraveWalletServiceDelegate is being destroyed. The
+# crashes happen because SetUpGlobalFeaturesForTesting is being called after
+# manually creating a secondary profile in the test (BrowserTabStripTracker is
+# using global BrowserCollection that was deleted by new global features), or
+# calling TearDownGlobalFeaturesForTesting without resetting the secondary
+# profile first. Incorrect order is being partially addressed upstream via
+# https://crgo.dev/r/7591034.
+-DefaultBrowserHandlerTest.*
+-DefaultBrowserManagerTest.*
+-DefaultBrowserNotificationObserverTest.*
+-SiteSettingsHelperChooserExceptionTest.*
+-SiteSettingsHelperExtensionTest.*
+-SiteSettingsHelperIsolatedWebAppTest.*
+-SiteSettingsHelperTest.*
+-PersistentPermissionsSiteSettingsHelperTest.*
+
 # Tests below this point have not been diagnosed or had issues created yet.
 -AboutFlagsHistogramTest.*
 -AboutFlagsTest.EveryFlagHasMetadata
