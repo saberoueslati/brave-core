@@ -120,6 +120,7 @@ export default defineConfig([
     // External or vendored code; not maintained in this repo
     'vendor/',
     'third_party/',
+    'ios/third_party/',
     'tools/crates/vendor/',
 
     // Not purely JavaScript, contains `<template>` expressions.
