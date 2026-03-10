@@ -1,0 +1,45 @@
+diff --git a/components/url_formatter/url_fixer.cc b/components/url_formatter/url_fixer.cc
+index 553623e61699757d520699eeeb9405b756872d8f..756bf1f41e5cbe828e4c5d865ecff807ad131c32 100644
+--- a/components/url_formatter/url_fixer.cc
++++ b/components/url_formatter/url_fixer.cc
+@@ -38,6 +38,7 @@ namespace {
+ 
+ // Hardcode these constants to avoid dependences on //chrome and //content.
+ const char kChromeUIScheme[] = "chrome";
++const char kBraveUIScheme[] = "brave";
+ const char kDevToolsScheme[] = "devtools";
+ const char kChromeUIDefaultHost[] = "version";
+ const char kViewSourceScheme[] = "view-source";
+@@ -476,6 +477,7 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
+       (*text)[semicolon] = ':';
+       if (GetValidScheme(*text, &parts->scheme, &scheme) &&
+           (url::IsStandard(scheme) || scheme == url::kAboutScheme ||
++           scheme == kBraveUIScheme ||
+            scheme == kChromeUIScheme || scheme == url::kFileScheme)) {
+         found_scheme = true;
+       } else {
+@@ -492,6 +494,7 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
+   // Proceed with about, chrome, and devtools schemes,
+   // but not file or nonstandard schemes.
+   if ((scheme != url::kAboutScheme) && (scheme != kChromeUIScheme) &&
++      (scheme != kBraveUIScheme) &&
+       (scheme != kDevToolsScheme) && !url::IsStandard(scheme)) {
+     return scheme;
+   }
+@@ -620,7 +623,7 @@ GURL FixupURLInternal(const std::string& text,
+   }
+ 
+   // For some schemes whose layouts we understand, we rebuild the URL.
+-  bool chrome_url =
++  bool chrome_url = (scheme == kBraveUIScheme) ||
+       (scheme == url::kAboutScheme) || (scheme == kChromeUIScheme);
+   bool devtools_url = (scheme == kDevToolsScheme);
+   if (chrome_url || devtools_url || url::IsStandard(scheme)) {
+@@ -744,6 +747,7 @@ void OffsetComponent(int offset, url::Component* part) {
+ bool IsEquivalentScheme(const std::string& scheme1,
+                         const std::string& scheme2) {
+   return scheme1 == scheme2 ||
++         (scheme1 == kBraveUIScheme && scheme2 == kChromeUIScheme) ||
+          (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
+          (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
+ }
