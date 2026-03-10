@@ -1,5 +1,5 @@
 diff --git a/components/url_formatter/url_fixer.cc b/components/url_formatter/url_fixer.cc
-index 553623e61699757d520699eeeb9405b756872d8f..9304ed4885004718a458ac7c521602c79c6441e1 100644
+index 553623e61699757d520699eeeb9405b756872d8f..c1239f71e954f4ec5bfe28315b9a7f1c17130fd6 100644
 --- a/components/url_formatter/url_fixer.cc
 +++ b/components/url_formatter/url_fixer.cc
 @@ -38,6 +38,7 @@ namespace {
@@ -37,3 +37,14 @@ index 553623e61699757d520699eeeb9405b756872d8f..9304ed4885004718a458ac7c521602c7
    bool devtools_url = (scheme == kDevToolsScheme);
    if (chrome_url || devtools_url || url::IsStandard(scheme)) {
      // Replace the about: scheme with the chrome: scheme.
+@@ -744,7 +745,9 @@ void OffsetComponent(int offset, url::Component* part) {
+ bool IsEquivalentScheme(const std::string& scheme1,
+                         const std::string& scheme2) {
+   return scheme1 == scheme2 ||
+-         (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
++         (scheme1 == url::kAboutScheme && scheme2 == kBraveUIScheme) ||
++(scheme1 == kBraveUIScheme && scheme2 == url::kAboutScheme) ||         '
++(scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
+          (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
+ }
+ 
