@@ -407,8 +407,7 @@ public class BraveWalletPanel implements DialogInterface {
                 if (activity.getActivityTab() != null) {
                     GURL lastCommittedUrl =
                             activity.getActivityTab().getWebContents().getLastCommittedUrl();
-                    if (!lastCommittedUrl.getScheme().equals(BraveUrlConstants.BRAVE_SCHEME)
-                            && !lastCommittedUrl.getScheme().equals(UrlConstants.CHROME_SCHEME)
+                    if (!lastCommittedUrl.getScheme().equals(UrlConstants.CHROME_SCHEME)
                             && !lastCommittedUrl
                                     .getScheme()
                                     .equals(UrlConstants.CHROME_NATIVE_SCHEME)) {

@@ -121,12 +121,8 @@ public class BraveRewardsNativeWorker {
     }
 
     public void onNotifyFrontTabUrlChanged(int tabId, String url) {
-        // Check both chrome:// and brave:// schemes. brave:// URLs (e.g.
-        // brave://version) are not recognized by the publisher lookup and
-        // would leave a stale verified-publisher checkmark from a previous tab.
         boolean internalUrl =
-                url.startsWith(UrlConstants.CHROME_SCHEME)
-                        || url.startsWith(BraveUrlConstants.BRAVE_SCHEME);
+                url.startsWith(UrlConstants.CHROME_SCHEME);
         boolean newUrl = (mFrontTabUrl == null || !mFrontTabUrl.equals(url));
         if (internalUrl) {
             // Don't query 'GetPublisherInfo' and post response now.
