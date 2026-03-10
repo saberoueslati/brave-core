@@ -56,7 +56,9 @@ export function useCharCountInfo(inputText: string) {
 
 // Each instance of ConversationContext should be provided with an API interface
 // connected to the relevant API endpoints.
-export type ConversationContextProps = SelectedChatDetails
+export type ConversationContextProps = SelectedChatDetails & {
+  isNTPWidget?: boolean
+}
 
 //
 // Given the provided conversation API connection, provides neccessary
@@ -307,7 +309,9 @@ export function useProvideConversationContext(props: ConversationContextProps) {
       aiChat.dismissStorageNotice()
     }
 
-    if (aiChat.isStandalone) {
+    if (props.isNTPWidget) {
+      aiChat.api.metrics.onSendingPromptWithNTP()
+    } else if (aiChat.isStandalone) {
       aiChat.api.metrics.onSendingPromptWithFullPage()
     }
 
