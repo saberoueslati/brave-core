@@ -1,0 +1,38 @@
+# Copyright (c) 2025 The Brave Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+[[substitution]]
+description = 'Add kBraveUIScheme constant definition'
+re_pattern = '(const char kChromeUIScheme\[\] = "chrome";)(\s+)(const char kDevToolsScheme)'
+replace = '\1\2const char kBraveUIScheme[] = "brave";\2\3'
+
+[[substitution]]
+description = 'Include kBraveUIScheme in valid scheme check in SegmentURLInternal'
+re_pattern = '(\|\|\s+scheme == kChromeUIScheme)'
+replace = '\1 || scheme == kBraveUIScheme'
+count = 1
+re_flags = ['MULTILINE']
+
+[[substitution]]
+description = 'Exclude kBraveUIScheme from nonstandard scheme check in SegmentURLInternal'
+re_pattern = '(&&\s+\(scheme != kChromeUIScheme\))'
+replace = '\1 && (scheme != kBraveUIScheme)'
+count = 1
+re_flags = ['MULTILINE']
+
+[[substitution]]
+description = 'Include kBraveUIScheme as chrome_url in FixupURLInternal'
+re_pattern = '(bool chrome_url =\s+)'
+replace = '\1 (scheme == kBraveUIScheme) || '
+count = 1
+re_flags = ['MULTILINE']
+
+[[substitution]]
+description = 'Add brave/chrome scheme equivalence to IsEquivalentScheme'
+re_pattern = '(return scheme1 == scheme2 \|\|\s+^)(\s+)'
+replace = '''\1\2(scheme1 == url::kAboutScheme && scheme2 == kBraveUIScheme) ||
+(scheme1 == kBraveUIScheme && scheme2 == url::kAboutScheme) ||\2\3'
+'''
+count = 1
