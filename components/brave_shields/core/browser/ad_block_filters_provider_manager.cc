@@ -45,6 +45,16 @@ void AdBlockFiltersProviderManager::RemoveProvider(
   NotifyObservers(is_for_default_engine);
 }
 
+void AdBlockFiltersProviderManager::ActivateAll() {
+  Activate();
+  for (auto*& provider : default_engine_filters_providers_) {
+    provider->Activate();
+  }
+  for (auto*& provider : additional_engine_filters_providers_) {
+    provider->Activate();
+  }
+}
+
 std::string AdBlockFiltersProviderManager::GetNameForDebugging() {
   return "AdBlockFiltersProviderManager";
 }

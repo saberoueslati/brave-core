@@ -55,6 +55,8 @@ class AdBlockFiltersProviderManager : public AdBlockFiltersProvider,
   void RemoveProvider(AdBlockFiltersProvider* provider,
                       bool is_for_default_engine);
 
+  void ActivateAll();
+
   std::string GetNameForDebugging() override;
 
  private:

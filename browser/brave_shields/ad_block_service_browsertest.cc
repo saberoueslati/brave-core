@@ -214,6 +214,7 @@ void AdBlockServiceTest::AddNewRules(const std::string& rules,
                                      bool first_party_protections) {
   auto source_provider = std::make_unique<brave_shields::TestFiltersProvider>(
       rules, first_party_protections, permission_mask);
+  source_provider->Activate();
   brave_shields::AdBlockService* ad_block_service =
       g_brave_browser_process->ad_block_service();
   source_provider->RegisterAsSourceProvider(ad_block_service);

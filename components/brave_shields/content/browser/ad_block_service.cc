@@ -58,7 +58,6 @@ AdBlockService::SourceProviderObserver::SourceProviderObserver(
       cache_dir_(cache_dir),
       task_runner_(owner->GetTaskRunner()) {
   filters_provider_manager_->AddObserver(this);
-  OnChanged(engine_is_default);
 }
 
 AdBlockService::SourceProviderObserver::~SourceProviderObserver() {
@@ -298,6 +297,13 @@ AdBlockSubscriptionServiceManager*
 AdBlockService::subscription_service_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return subscription_service_manager_.get();
+}
+
+void AdBlockService::ActivateFilterLoading() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  filters_provider_manager_->ActivateAll();
+  default_service_observer_->OnChanged(true);
+  additional_filters_service_observer_->OnChanged(false);
 }
 
 AdBlockService::AdBlockService(

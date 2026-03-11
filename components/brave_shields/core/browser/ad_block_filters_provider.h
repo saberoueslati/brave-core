@@ -51,6 +51,9 @@ class AdBlockFiltersProvider {
 
   virtual std::string GetNameForDebugging() = 0;
 
+  // The provider will not signal observers until it is activated
+  void Activate();
+  bool IsActivated() { return is_activated_; }
   // Intended to be overridden if the provider implementation is not immediately
   // ready at creation time.
   virtual bool IsInitialized() const;
@@ -62,6 +65,7 @@ class AdBlockFiltersProvider {
   void NotifyObservers(bool is_for_default_engine);
 
  private:
+  bool is_activated_ = false;
   base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<AdBlockFiltersProvider> weak_factory_{this};
 };

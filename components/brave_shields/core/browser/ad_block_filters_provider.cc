@@ -20,6 +20,9 @@ AdBlockFiltersProvider::AdBlockFiltersProvider(
       filters_provider_manager_(filters_provider_manager) {
   // Can be nullptr in tests (deferred setter)
   if (filters_provider_manager_ != nullptr) {
+    if (filters_provider_manager_->IsActivated()) {
+      is_activated_ = true;
+    }
     filters_provider_manager_->AddProvider(this, engine_is_default_);
   } else {
     CHECK_IS_TEST();
@@ -49,9 +52,15 @@ void AdBlockFiltersProvider::RemoveObserver(
 }
 
 void AdBlockFiltersProvider::NotifyObservers(bool is_for_default_engine) {
-  for (auto& observer : observers_) {
-    observer.OnChanged(is_for_default_engine);
+  if (is_activated_) {
+    for (auto& observer : observers_) {
+      observer.OnChanged(is_for_default_engine);
+    }
   }
+}
+
+void AdBlockFiltersProvider::Activate() {
+  is_activated_ = true;
 }
 
 bool AdBlockFiltersProvider::IsInitialized() const {

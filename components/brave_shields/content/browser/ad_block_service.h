@@ -72,13 +72,13 @@ class AdBlockService {
     SourceProviderObserver& operator=(const SourceProviderObserver&) = delete;
     ~SourceProviderObserver() override;
 
+    // AdBlockFiltersProvider::Observer
+    void OnChanged(bool is_default_engine) override;
+
    private:
     void OnFilterSetCallbackLoaded(
         base::OnceCallback<void(rust::Box<adblock::FilterSet>*)> cb);
     void OnFilterSetCreated(std::unique_ptr<rust::Box<adblock::FilterSet>>);
-
-    // AdBlockFiltersProvider::Observer
-    void OnChanged(bool is_default_engine) override;
 
     // AdBlockResourceProvider::Observer
     void OnResourcesLoaded(AdblockResourceStorageBox) override;
@@ -108,6 +108,8 @@ class AdBlockService {
   AdBlockService(const AdBlockService&) = delete;
   AdBlockService& operator=(const AdBlockService&) = delete;
   ~AdBlockService();
+
+  void ActivateFilterLoading();
 
   adblock::BlockerResult ShouldStartRequest(
       const GURL& url,
