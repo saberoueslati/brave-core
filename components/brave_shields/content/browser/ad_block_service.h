@@ -160,6 +160,10 @@ class AdBlockService {
 
   static std::string g_ad_block_dat_file_version_;
 
+  void OnReadCachedDATFiles(
+      std::optional<std::pair<DATFileDataBuffer, DATFileDataBuffer>>
+          read_result);
+
   AdBlockDefaultResourceProvider* default_resource_provider();
   AdBlockComponentFiltersProvider* default_filters_provider() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
