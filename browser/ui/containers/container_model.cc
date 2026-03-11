@@ -5,12 +5,17 @@
 
 #include "brave/browser/ui/containers/container_model.h"
 
+#include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/functional/bind.h"
+#include "brave/browser/containers/containers_service_factory.h"
 #include "brave/browser/ui/containers/containers_icon_generator.h"
+#include "brave/components/containers/core/browser/containers_service.h"
 #include "brave/components/containers/core/browser/prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -64,6 +69,22 @@ std::vector<ContainerModel> GetContainerModelsFromPrefs(
     containers.emplace_back(std::move(container), scale_factor);
   }
   return containers;
+}
+
+std::optional<ContainerModel> GetRuntimeContainerModel(Profile* profile,
+                                                       std::string_view id,
+                                                       float scale_factor) {
+  if (!profile || id.empty()) {
+    return std::nullopt;
+  }
+
+  if (auto* service = ContainersServiceFactory::GetForProfile(profile)) {
+    if (auto container = service->GetContainerById(std::string(id))) {
+      return ContainerModel(std::move(container), scale_factor);
+    }
+  }
+
+  return ContainerModel::CreateForUnknown(std::string(id), scale_factor);
 }
 
 }  // namespace containers

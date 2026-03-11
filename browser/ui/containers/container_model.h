@@ -6,13 +6,16 @@
 #ifndef BRAVE_BROWSER_UI_CONTAINERS_CONTAINER_MODEL_H_
 #define BRAVE_BROWSER_UI_CONTAINERS_CONTAINER_MODEL_H_
 
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "brave/components/containers/core/mojom/containers.mojom.h"
 #include "ui/base/models/image_model.h"
 
 class PrefService;
+class Profile;
 
 namespace containers {
 
@@ -53,6 +56,13 @@ class ContainerModel {
 std::vector<ContainerModel> GetContainerModelsFromPrefs(
     const PrefService& prefs,
     float scale_factor);
+
+// Resolves a runtime container model using synced prefs first and then the
+// local used-containers cache. Falls back to an unknown model when the
+// container is not known locally anymore.
+std::optional<ContainerModel> GetRuntimeContainerModel(Profile* profile,
+                                                       std::string_view id,
+                                                       float scale_factor);
 
 }  // namespace containers
 

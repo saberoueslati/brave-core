@@ -414,11 +414,18 @@ if (enable_ai_chat && is_android) {
 }
 
 if (enable_containers) {
+  brave_chrome_browser_sources += [
+    "//brave/browser/containers/containers_service_delegate.cc",
+    "//brave/browser/containers/containers_service_delegate.h",
+    "//brave/browser/containers/containers_service_factory.cc",
+    "//brave/browser/containers/containers_service_factory.h",
+  ]
   brave_chrome_browser_deps += [
     "//brave/components/containers/content/browser",
     "//brave/components/containers/content/browser:tab_restore",
     "//brave/components/containers/core/browser",
     "//brave/components/containers/core/common",
+    "//components/sessions",
   ]
 }
 

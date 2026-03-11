@@ -5,6 +5,7 @@
 
 #include "brave/components/containers/core/browser/prefs.h"
 
+#include <string_view>
 #include <utility>
 
 #include "brave/components/containers/core/browser/pref_names.h"
@@ -12,38 +13,82 @@
 #include "brave/components/containers/core/mojom/containers.mojom.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace containers {
 
+namespace {
+
+mojom::ContainerPtr ContainerFromDict(const base::DictValue& dict) {
+  auto* id = dict.FindString("id");
+  auto* name = dict.FindString("name");
+  auto icon = dict.FindInt("icon");
+  auto background_color = dict.FindInt("background_color");
+  if (!id || !name || !icon.has_value() || !background_color.has_value()) {
+    LOG(ERROR) << "Container is missing id, name, icon, or background_color";
+    return nullptr;
+  }
+
+  return mojom::Container::New(*id, *name, static_cast<mojom::Icon>(*icon),
+                               *background_color);
+}
+
+base::DictValue ContainerToDict(const mojom::ContainerPtr& container) {
+  return base::DictValue()
+      .Set("id", container->id)
+      .Set("name", container->name)
+      .Set("icon", std::to_underlying(container->icon))
+      .Set("background_color", static_cast<int>(container->background_color));
+}
+
+std::vector<mojom::ContainerPtr> GetContainersFromList(
+    const base::ListValue& list) {
+  std::vector<mojom::ContainerPtr> containers;
+  for (const auto& container : list) {
+    if (!container.is_dict()) {
+      LOG(ERROR) << "Container is not a dictionary";
+      continue;
+    }
+
+    if (auto parsed = ContainerFromDict(container.GetDict())) {
+      containers.push_back(std::move(parsed));
+    }
+  }
+  return containers;
+}
+
+mojom::ContainerPtr GetContainerFromDictPref(const base::DictValue& dict,
+                                             std::string_view id) {
+  if (const auto* value = dict.FindDict(id)) {
+    return ContainerFromDict(*value);
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kContainersList,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kUsedContainers);
 }
 
 std::vector<mojom::ContainerPtr> GetContainersFromPrefs(
     const PrefService& prefs) {
   CHECK(base::FeatureList::IsEnabled(features::kContainers));
-  std::vector<mojom::ContainerPtr> containers;
-  for (const auto& container : prefs.GetList(prefs::kContainersList)) {
-    if (!container.is_dict()) {
-      LOG(ERROR) << "Container is not a dictionary";
-      continue;
-    }
-    const base::DictValue& dict = container.GetDict();
-    auto* id = dict.FindString("id");
-    auto* name = dict.FindString("name");
-    auto icon = dict.FindInt("icon");
-    auto background_color = dict.FindInt("background_color");
-    if (!id || !name || !icon.has_value() || !background_color.has_value()) {
-      LOG(ERROR) << "Container is missing id, name, icon, or background_color";
-      continue;
-    }
+  return GetContainersFromList(prefs.GetList(prefs::kContainersList));
+}
 
-    containers.push_back(mojom::Container::New(
-        *id, *name, static_cast<mojom::Icon>(*icon), *background_color));
+mojom::ContainerPtr GetContainerFromPrefs(const PrefService& prefs,
+                                          std::string_view id) {
+  CHECK(base::FeatureList::IsEnabled(features::kContainers));
+  for (auto& container : GetContainersFromPrefs(prefs)) {
+    if (container->id == id) {
+      return std::move(container);
+    }
   }
-  return containers;
+  return nullptr;
 }
 
 void SetContainersToPrefs(const std::vector<mojom::ContainerPtr>& containers,
@@ -51,14 +96,46 @@ void SetContainersToPrefs(const std::vector<mojom::ContainerPtr>& containers,
   CHECK(base::FeatureList::IsEnabled(features::kContainers));
   base::ListValue list;
   for (const auto& container : containers) {
-    list.Append(base::DictValue()
-                    .Set("id", container->id)
-                    .Set("name", container->name)
-                    .Set("icon", std::to_underlying(container->icon))
-                    .Set("background_color",
-                         static_cast<int>(container->background_color)));
+    list.Append(ContainerToDict(container));
   }
   prefs.SetList(prefs::kContainersList, std::move(list));
+}
+
+std::vector<mojom::ContainerPtr> GetUsedContainersFromPrefs(
+    const PrefService& prefs) {
+  CHECK(base::FeatureList::IsEnabled(features::kContainers));
+  std::vector<mojom::ContainerPtr> containers;
+  for (const auto item : prefs.GetDict(prefs::kUsedContainers)) {
+    if (!item.second.is_dict()) {
+      LOG(ERROR) << "Used container snapshot is not a dictionary";
+      continue;
+    }
+
+    if (auto parsed = ContainerFromDict(item.second.GetDict())) {
+      containers.push_back(std::move(parsed));
+    }
+  }
+  return containers;
+}
+
+mojom::ContainerPtr GetUsedContainerFromPrefs(const PrefService& prefs,
+                                              std::string_view id) {
+  CHECK(base::FeatureList::IsEnabled(features::kContainers));
+  return GetContainerFromDictPref(prefs.GetDict(prefs::kUsedContainers), id);
+}
+
+void SetUsedContainerToPrefs(const mojom::ContainerPtr& container,
+                             PrefService& prefs) {
+  CHECK(base::FeatureList::IsEnabled(features::kContainers));
+  CHECK(container);
+  ScopedDictPrefUpdate update(&prefs, prefs::kUsedContainers);
+  update->Set(container->id, ContainerToDict(container));
+}
+
+void RemoveUsedContainerFromPrefs(std::string_view id, PrefService& prefs) {
+  CHECK(base::FeatureList::IsEnabled(features::kContainers));
+  ScopedDictPrefUpdate update(&prefs, prefs::kUsedContainers);
+  update->Remove(id);
 }
 
 }  // namespace containers

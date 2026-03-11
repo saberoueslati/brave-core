@@ -14,7 +14,6 @@
 #include "brave/components/containers/core/common/features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/actions/chrome_action_id.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 
 namespace page_actions {
@@ -34,21 +33,14 @@ std::optional<containers::ContainerModel> GetContainerModelForWebContents(
     return std::nullopt;
   }
 
-  auto* prefs = user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
-  if (!prefs) {
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile) {
     return std::nullopt;
   }
 
-  std::vector<containers::ContainerModel> models =
-      containers::GetContainerModelsFromPrefs(*prefs, kDefaultScaleFactor);
-  auto it =
-      std::ranges::find(models, container_id, &containers::ContainerModel::id);
-  if (it != models.end()) {
-    return containers::ContainerModel(std::move(*it));
-  }
-
-  return containers::ContainerModel::CreateForUnknown(container_id,
-                                                      kDefaultScaleFactor);
+  return containers::GetRuntimeContainerModel(profile, container_id,
+                                              kDefaultScaleFactor);
 }
 
 }  // namespace
