@@ -5,6 +5,7 @@
 
 #include "content/public/browser/browser_url_handler.h"
 #include "url/gurl.h"
+#include "base/logging.h"
 
 namespace {
 
