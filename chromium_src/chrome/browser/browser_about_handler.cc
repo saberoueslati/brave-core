@@ -18,6 +18,7 @@ bool HandleChromeAboutAndChromeSyncRewrite(
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     *url = url->ReplaceComponents(replacements);
+    // We want both the real and virtual url to be chrome so rewrite both
     return true;
   }
 
