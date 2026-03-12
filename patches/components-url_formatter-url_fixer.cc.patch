@@ -1,5 +1,5 @@
 diff --git a/components/url_formatter/url_fixer.cc b/components/url_formatter/url_fixer.cc
-index 553623e61699757d520699eeeb9405b756872d8f..c4bbd6327970c642532eb02797581babf12839f5 100644
+index 553623e61699757d520699eeeb9405b756872d8f..080a769afd7c947c37a942ed4af7f34bfff2255d 100644
 --- a/components/url_formatter/url_fixer.cc
 +++ b/components/url_formatter/url_fixer.cc
 @@ -38,6 +38,7 @@ namespace {
@@ -46,8 +46,8 @@ index 553623e61699757d520699eeeb9405b756872d8f..c4bbd6327970c642532eb02797581bab
  bool IsEquivalentScheme(const std::string& scheme1,
                          const std::string& scheme2) {
    return scheme1 == scheme2 ||
-+         (scheme1 == url::kAboutScheme && scheme2 == kBraveUIScheme) ||
-+         (scheme1 == kBraveUIScheme && scheme2 == url::kAboutScheme) ||
++         (scheme1 == kChromeUIScheme && scheme2 == kBraveUIScheme) ||
++         (scheme1 == kBraveUIScheme && scheme2 == kChromeUIScheme) ||
           (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
           (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
  }
