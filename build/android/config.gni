@@ -116,7 +116,6 @@ brave_chrome_java_srcjar_deps = [
 brave_chrome_app_java_resources_deps = [
   "//brave/android:java_resources",
   "//brave/android/nala",
-  "//brave/browser/first_run/android:java_resources",
   "//brave/browser/custom_search_engines/android:java_resources",
   "//brave/browser/first_run/android:java_resources",
   "//brave/browser/quick_search_engines/android:java_resources",

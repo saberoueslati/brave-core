@@ -21,8 +21,9 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.MonotonicObservableSupplier;
+import org.chromium.base.supplier.ObservableSuppliers;
+import org.chromium.base.supplier.SettableMonotonicObservableSupplier;
 import org.chromium.brave.browser.custom_search_engines.CustomSearchEnginesManager;
 import org.chromium.brave.browser.custom_search_engines.R;
 import org.chromium.build.annotations.NullMarked;
@@ -52,7 +53,8 @@ public class AddCustomSearchEnginePreferenceFragment extends ChromeBaseSettingsF
 
     private @Nullable CustomSearchEnginesManager mCustomSearchEnginesManager;
 
-    private final ObservableSupplierImpl<String> mPageTitle = new ObservableSupplierImpl<>();
+    private final SettableMonotonicObservableSupplier<String> mPageTitle =
+            ObservableSuppliers.createMonotonic();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -349,7 +351,7 @@ public class AddCustomSearchEnginePreferenceFragment extends ChromeBaseSettingsF
     }
 
     @Override
-    public ObservableSupplier<String> getPageTitle() {
+    public MonotonicObservableSupplier<String> getPageTitle() {
         return mPageTitle;
     }
 
