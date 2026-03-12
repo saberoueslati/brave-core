@@ -19,7 +19,8 @@
 
 using security_state::SecurityLevel;
 
-class MockBraveLocationBarModelDelegate : public BrowserLocationBarModelDelegate {
+class MockBraveLocationBarModelDelegate
+    : public BrowserLocationBarModelDelegate {
  public:
   using BrowserLocationBarModelDelegate::BrowserLocationBarModelDelegate;
   ~MockBraveLocationBarModelDelegate() override = default;
