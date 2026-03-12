@@ -22,7 +22,6 @@ import com.google.android.material.button.MaterialButton;
 
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.BravePreferenceKeys;
-import org.chromium.base.BraveUrlConstants;
 import org.chromium.base.DeviceInfo;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.supplier.NullableObservableSupplier;

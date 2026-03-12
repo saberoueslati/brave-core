@@ -16,7 +16,6 @@ import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 import org.json.JSONException;
 
-import org.chromium.base.BraveUrlConstants;
 import org.chromium.brave_rewards.mojom.PublisherStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -121,8 +120,7 @@ public class BraveRewardsNativeWorker {
     }
 
     public void onNotifyFrontTabUrlChanged(int tabId, String url) {
-        boolean internalUrl =
-                url.startsWith(UrlConstants.CHROME_SCHEME);
+        boolean internalUrl = url.startsWith(UrlConstants.CHROME_SCHEME);
         boolean newUrl = (mFrontTabUrl == null || !mFrontTabUrl.equals(url));
         if (internalUrl) {
             // Don't query 'GetPublisherInfo' and post response now.
