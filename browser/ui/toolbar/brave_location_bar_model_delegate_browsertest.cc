@@ -28,7 +28,7 @@ class MockBraveLocationBarModelDelegate : public BrowserLocationBarModelDelegate
     if (security_level_) {
       return *security_level_;
     }
-    return BraveLocationBarModelDelegate::GetSecurityLevel();
+    return BrowserLocationBarModelDelegate::GetSecurityLevel();
   }
 
   void SetSecurityLevel(SecurityLevel level) { security_level_ = level; }
