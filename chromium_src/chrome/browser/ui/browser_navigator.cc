@@ -19,14 +19,6 @@
 
 namespace {
 
-void UpdateBraveScheme(NavigateParams* params) {
-  if (params->url.SchemeIs(content::kBraveUIScheme)) {
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(content::kChromeUIScheme);
-    params->url = params->url.ReplaceComponents(replacements);
-  }
-}
-
 void MaybeOverridePopupDisposition(NavigateParams* params) {
   if (base::FeatureList::IsEnabled(features::kForcePopupToBeOpenedAsTab) &&
       params->disposition == WindowOpenDisposition::NEW_POPUP) {
@@ -35,7 +27,6 @@ void MaybeOverridePopupDisposition(NavigateParams* params) {
 }
 
 void UpdateParams(NavigateParams* params) {
-  UpdateBraveScheme(params);
   MaybeOverridePopupDisposition(params);
 }
 
