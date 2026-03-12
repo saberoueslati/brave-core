@@ -61,7 +61,6 @@ bool BraveLocationBarModelDelegate::GetURL(GURL* url) const {
           ->GetBoolean(brave_tabs::kSharedPinnedTab)) {
     content::NavigationEntry* entry = GetNavigationEntry();
     if (entry && entry->IsInitialEntry()) {
-
       auto* shared_pinned_tab_service =
           SharedPinnedTabServiceFactory::GetForProfile(
               Profile::FromBrowserContext(
