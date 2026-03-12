@@ -32,8 +32,8 @@ re_flags = ['MULTILINE']
 [[substitution]]
 description = 'Add brave/chrome scheme equivalence to IsEquivalentScheme'
 re_pattern = '(return scheme1 == scheme2 \|\|\s*)(^[\s]+)'
-replace = '''\1\2(scheme1 == url::kAboutScheme && scheme2 == kBraveUIScheme) ||
-\2(scheme1 == kBraveUIScheme && scheme2 == url::kAboutScheme) ||\n\2'''
+replace = '''\1\2(scheme1 == kChromeUIScheme && scheme2 == kBraveUIScheme) ||
+\2(scheme1 == kBraveUIScheme && scheme2 == kChromeUIScheme) ||\n\2'''
 re_flags = ['MULTILINE']
 count = 1
 
