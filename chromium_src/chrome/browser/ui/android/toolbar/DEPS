@@ -1,3 +1,0 @@
-include_rules = [
- "+src/chrome/browser/ui/android/toolbar/location_bar_model_android.h",
-]
