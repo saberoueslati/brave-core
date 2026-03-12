@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history_embeddings/history_embeddings_features.h"
 #include "components/history_embeddings/history_embeddings_service.h"
+#include "components/passage_embeddings/core/passage_embeddings_features.h"
 
 namespace brave {
 
@@ -62,9 +63,21 @@ void BraveEmbedder::OnPassageEmbedderAcquired(
 
 void BraveEmbedder::OnPassageEmbedderDisconnected() {
   DVLOG(2) << "BraveEmbedder: PassageEmbedder disconnected";
+  idle_timer_.Stop();
   passage_embedder_.reset();
   acquiring_embedder_ = false;
   FailAllPendingTasks();
+}
+
+void BraveEmbedder::OnIdleTimeout() {
+  DVLOG(2) << "BraveEmbedder: Idle timeout, disconnecting PassageEmbedder";
+  passage_embedder_.reset();
+}
+
+void BraveEmbedder::RestartIdleTimer() {
+  idle_timer_.Start(FROM_HERE, passage_embeddings::kEmbedderTimeout.Get(),
+                    base::BindOnce(&BraveEmbedder::OnIdleTimeout,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BraveEmbedder::FailAllPendingTasks() {
@@ -112,6 +125,7 @@ BraveEmbedder::TaskId BraveEmbedder::ComputePassagesEmbeddings(
   }
 
   DVLOG(3) << "LocalAIService is available, creating task";
+  idle_timer_.Stop();
 
   // Create pending task
   PendingTask task;
@@ -266,7 +280,9 @@ void BraveEmbedder::OnAllEmbeddingsComplete(
       std::move(callback).Run(
           std::move(passages), {}, task_id,
           passage_embeddings::ComputeEmbeddingsStatus::kExecutionFailure);
-      MaybeReleasePassageEmbedder();
+      if (pending_tasks_.empty() && passage_embedder_.is_bound()) {
+        RestartIdleTimer();
+      }
       return;
     }
   }
@@ -309,13 +325,8 @@ void BraveEmbedder::OnAllEmbeddingsComplete(
       std::move(passages), std::move(embeddings), task_id,
       passage_embeddings::ComputeEmbeddingsStatus::kSuccess);
 
-  MaybeReleasePassageEmbedder();
-}
-
-void BraveEmbedder::MaybeReleasePassageEmbedder() {
   if (pending_tasks_.empty() && passage_embedder_.is_bound()) {
-    DVLOG(3) << "BraveEmbedder: All tasks done, releasing PassageEmbedder";
-    passage_embedder_.reset();
+    RestartIdleTimer();
   }
 }
 

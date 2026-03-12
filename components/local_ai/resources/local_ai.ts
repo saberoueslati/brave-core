@@ -133,6 +133,8 @@ class PassageEmbedderFactoryImpl implements PassageEmbedderFactoryInterface {
     }
   }
 
+  boundCount: number = 0
+
   bind(receiver: PassageEmbedderPendingReceiver) {
     if (!this.embedder) {
       console.error('Cannot create embedder: model not initialized')
@@ -141,6 +143,13 @@ class PassageEmbedderFactoryImpl implements PassageEmbedderFactoryInterface {
     const impl = new PassageEmbedderImpl(this.embedder)
     const bound = new PassageEmbedderReceiver(impl)
     bound.$.bindHandle(receiver.handle)
+    this.boundCount++
+    bound.onConnectionError.addListener(() => {
+      this.boundCount--
+      if (this.boundCount === 0) {
+        localAIService.notifyPassageEmbedderIdle()
+      }
+    })
   }
 
   getPendingRemote() {

@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "brave/components/local_ai/core/local_ai.mojom.h"
 #include "components/passage_embeddings/core/passage_embeddings_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -72,6 +73,8 @@ class BraveEmbedder : public passage_embeddings::Embedder {
   void OnPassageEmbedderAcquired(
       mojo::PendingRemote<local_ai::mojom::PassageEmbedder> remote);
   void OnPassageEmbedderDisconnected();
+  void OnIdleTimeout();
+  void RestartIdleTimer();
   void FailAllPendingTasks();
   void ProcessAllPassagesInParallel(TaskId task_id);
   void OnSingleEmbeddingResult(
@@ -82,14 +85,18 @@ class BraveEmbedder : public passage_embeddings::Embedder {
   void OnAllEmbeddingsComplete(
       TaskId task_id,
       const std::vector<std::pair<size_t, std::vector<double>>>& results);
-  void MaybeReleasePassageEmbedder();
-
   bool acquiring_embedder_ = false;
   TaskId next_task_id_ = 1;
   base::flat_map<TaskId, PendingTask> pending_tasks_;
 
   mojo::Remote<local_ai::mojom::LocalAIService> local_ai_service_;
   mojo::Remote<local_ai::mojom::PassageEmbedder> passage_embedder_;
+
+  // Mojo's set_idle_handler() relies on the receiver sending MessageAck and
+  // NotifyIdle control messages, but the JS Mojo bindings don't implement
+  // this protocol. Use an explicit timer instead: it starts when all tasks
+  // complete and resets when new work arrives.
+  base::OneShotTimer idle_timer_;
 
   base::WeakPtrFactory<BraveEmbedder> weak_ptr_factory_{this};
 };
