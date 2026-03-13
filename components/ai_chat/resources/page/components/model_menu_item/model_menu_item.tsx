@@ -37,6 +37,37 @@ const ModelContent = (props: ModelContentProps) => {
     model.options.customModelOptions?.endpoint.url === Mojom.OLLAMA_ENDPOINT
   )
 
+  // Get subtitle based on model type
+  const getModelSubtitle = React.useMemo(() => {
+    try {
+      // For custom models, show the model request name
+      if (model.options.customModelOptions) {
+        const subtitle = model.options.customModelOptions.modelRequestName
+        return subtitle
+      }
+
+      // For Leo models, try localized string first
+      if (model.options.leoModelOptions) {
+        const localizedKey = `CHAT_UI_${model.key
+          .toUpperCase()
+          .replaceAll('-', '_')}_SUBTITLE`
+        const localizedString = getLocale(localizedKey)
+
+        // If localization exists (not same as key), use it
+        if (localizedString !== localizedKey) {
+          return localizedString
+        }
+
+        // Fall back to displayName for remote models without localization
+        return model.displayName
+      }
+
+      return undefined
+    } catch (error) {
+      return undefined
+    }
+  }, [model])
+
   const label = React.useMemo(() => {
     if (isCurrent) {
       return (
@@ -92,62 +123,64 @@ const ModelContent = (props: ModelContentProps) => {
     return null
   }, [isCurrent, showPremiumLabel, isCustomModel, isOllamaModel, model])
 
-  return (
-    <>
-      <div
-        className={classnames({
-          [styles.modelIcon]: true,
-          [styles.modelIconDetailed]: showDetails,
-          [styles.disabled]: isDisabled,
-        })}
-        data-key={model.key}
-      >
-        <Icon name={getModelIcon(model)} />
-      </div>
-      <div className={styles.column}>
-        <div className={styles.nameAndLabel}>
-          <div
-            className={classnames({
-              [styles.modelName]: true,
-              [styles.disabled]: isDisabled,
-            })}
-          >
-            {model.displayName}
-            {model.isNearModel && <NearIcon />}
-          </div>
-          {label}
+  try {
+    return (
+      <>
+        <div
+          className={classnames({
+            [styles.modelIcon]: true,
+            [styles.modelIconDetailed]: showDetails,
+            [styles.disabled]: isDisabled,
+          })}
+          data-key={model.key}
+        >
+          <Icon name={getModelIcon(model)} />
         </div>
-        {showDetails && (
-          <>
-            <p className={styles.modelSubtitle}>
-              {isCustomModel
-                ? model.options.customModelOptions?.modelRequestName
-                : getLocale(
-                    `CHAT_UI_${model.key
-                      .toUpperCase()
-                      .replaceAll('-', '_')}_SUBTITLE`,
-                  )}
-            </p>
-            {onClickLearnMore && model.isNearModel && (
-              <a
-                // While we preventDefault, we still need to pass the href
-                // here so we can continue to show link previews.
-                href={NEAR_AI_LEARN_MORE_URL}
-                className={styles.learnMoreLink}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onClickLearnMore()
-                }}
-              >
-                {getLocale(S.CHAT_UI_LEARN_MORE)}
-              </a>
-            )}
-          </>
-        )}
+        <div className={styles.column}>
+          <div className={styles.nameAndLabel}>
+            <div
+              className={classnames({
+                [styles.modelName]: true,
+                [styles.disabled]: isDisabled,
+              })}
+            >
+              {model.displayName}
+              {model.isNearModel && <NearIcon />}
+            </div>
+            {label}
+          </div>
+          {showDetails && (
+            <>
+              <p className={styles.modelSubtitle}>
+                {getModelSubtitle}
+              </p>
+              {onClickLearnMore && model.isNearModel && (
+                <a
+                  // While we preventDefault, we still need to pass the href
+                  // here so we can continue to show link previews.
+                  href={NEAR_AI_LEARN_MORE_URL}
+                  className={styles.learnMoreLink}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onClickLearnMore()
+                  }}
+                >
+                  {getLocale(S.CHAT_UI_LEARN_MORE)}
+                </a>
+              )}
+            </>
+          )}
+        </div>
+      </>
+    )
+  } catch (error) {
+    return (
+      <div style={{ color: 'red' }}>
+        Error rendering model: {model?.key || 'unknown'}
       </div>
-    </>
-  )
+    )
+  }
 }
 
 interface MenuItemProps extends ModelContentProps {

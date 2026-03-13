@@ -35,6 +35,7 @@ class SharedURLLoaderFactory;
 namespace ai_chat {
 class EngineConsumer;
 class AIChatCredentialManager;
+class RemoteModelsFetcher;
 
 class ModelService : public KeyedService {
  public:
@@ -50,6 +51,8 @@ class ModelService : public KeyedService {
   };
 
   explicit ModelService(PrefService* profile_prefs);
+  ModelService(PrefService* profile_prefs,
+               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ModelService() override;
 
   ModelService(const ModelService&) = delete;
@@ -89,6 +92,16 @@ class ModelService : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Refresh remote models from endpoint (manual cache invalidation).
+  void RefreshRemoteModels();
+
+  // Validate if a model key exists in the current model list.
+  bool IsValidModelKey(const std::string& model_key) const;
+
+  // Get a fallback model key when the requested model is unavailable.
+  // Priority: Automatic model > first suggested model > first available model.
+  std::string GetFallbackModelKey() const;
+
   // TODO(petemill): not ideal to take these params that engine's happen
   // to need. Perhaps put this function on AIChatService, which will
   // likely directly have access to any params any engine needs.
@@ -105,10 +118,23 @@ class ModelService : public KeyedService {
  private:
   void InitModels();
 
+  // Get models for initialization (remote or static Leo models).
+  std::vector<mojom::ModelPtr> GetModelsForInitialization();
+
+  // Initiate remote models fetch.
+  void InitRemoteModels();
+
+  // Handle remote models fetch completion.
+  void OnRemoteModelsFetched(std::vector<mojom::ModelPtr> models);
+
   base::ObserverList<Observer> observers_;
   std::vector<ai_chat::mojom::ModelPtr> models_;
   raw_ptr<PrefService> pref_service_;
   bool is_migrating_claude_instant_ = false;
+
+  // Remote models support
+  std::unique_ptr<RemoteModelsFetcher> remote_models_fetcher_;
+  bool using_remote_models_ = false;
 
   base::WeakPtrFactory<ModelService> weak_ptr_factory_{this};
 };

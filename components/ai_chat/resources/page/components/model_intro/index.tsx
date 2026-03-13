@@ -67,20 +67,32 @@ export default function ModelIntro() {
                 slot='content'
                 className={styles.tooltipContent}
               >
-                {formatLocale(getIntroMessageKey(model), {
-                  $1: (content) => {
-                    return (
-                      <button
-                        key={content}
-                        onClick={() =>
-                          aiChatContext.api.uiHandler.openModelSupportUrl()
-                        }
-                      >
-                        {content}
-                      </button>
-                    )
-                  },
-                })}
+                {model.key === 'chat-automatic' ? (
+                  formatLocale(getIntroMessageKey(model), {
+                    $1: (content) => {
+                      return (
+                        <button
+                          onClick={() =>
+                            aiChatContext.api.uiHandler.openModelSupportUrl()
+                          }
+                        >
+                          {content}
+                        </button>
+                      )
+                    },
+                  })
+                ) : (
+                  <>
+                    {model.options.leoModelOptions!.description}{' '}
+                    <button
+                      onClick={() =>
+                        aiChatContext.api.uiHandler.openModelSupportUrl()
+                      }
+                    >
+                      {getLocale('CHAT_UI_LEARN_MORE')}
+                    </button>
+                  </>
+                )}
               </div>
               <Button
                 fab

@@ -49,6 +49,12 @@ const base::FeatureParam<bool> kAutomaticModelSupportsTools{
 const base::FeatureParam<bool> kShouldIndentPageContentBlocks{
     &kAIChat, "should_indent_page_content_blocks", true};
 
+const base::FeatureParam<std::string> kRemoteModelsEndpoint{
+    &kAIChat, "remote_models_endpoint", ""};
+
+const base::FeatureParam<int> kRemoteModelsCacheTTLMinutes{
+    &kAIChat, "remote_models_cache_ttl_minutes", 60};
+
 bool IsAIChatEnabled() {
   return base::FeatureList::IsEnabled(features::kAIChat);
 }

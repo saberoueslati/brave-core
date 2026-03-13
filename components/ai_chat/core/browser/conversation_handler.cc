@@ -503,6 +503,25 @@ void ConversationHandler::GetModels(GetModelsCallback callback) {
 
 void ConversationHandler::ChangeModel(const std::string& model_key) {
   CHECK(!model_key.empty());
+
+  // Validate model exists, fallback if not
+  if (!model_service_->IsValidModelKey(model_key)) {
+    VLOG(1) << "Model '" << model_key << "' not found, falling back to default";
+
+    // Try default model
+    std::string default_key = model_service_->GetDefaultModelKey();
+    if (model_service_->IsValidModelKey(default_key)) {
+      model_key_ = default_key;
+    } else {
+      // Even default is invalid, use fallback
+      model_key_ = model_service_->GetFallbackModelKey();
+    }
+
+    // InitEngine will handle updating metadata and notifying observers
+    InitEngine();
+    return;
+  }
+
   // Check that the key exists
   auto* new_model = model_service_->GetModel(model_key);
   if (new_model) {

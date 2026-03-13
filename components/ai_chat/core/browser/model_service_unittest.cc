@@ -15,6 +15,7 @@
 #include "base/scoped_observation.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "brave/components/ai_chat/core/browser/constants.h"
 #include "brave/components/ai_chat/core/browser/model_validator.h"
 #include "brave/components/ai_chat/core/common/constants.h"
@@ -23,6 +24,8 @@
 #include "brave/components/ai_chat/core/common/pref_names.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/prefs/testing_pref_service.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -577,6 +580,435 @@ TEST_F(ModelServiceTest, GetCustomModels) {
 
   // GetModels should return both Leo and custom models
   EXPECT_EQ(GetService()->GetModels().size(), initial_model_count + 1);
+}
+
+// Remote Models Tests
+
+class ModelServiceRemoteModelsTest : public testing::Test {
+ public:
+  ModelServiceRemoteModelsTest()
+      : shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
+
+  void SetUp() override {
+    OSCryptMocker::SetUp();
+    prefs::RegisterProfilePrefs(pref_service_.registry());
+    prefs::RegisterProfilePrefsForMigration(pref_service_.registry());
+    ModelService::RegisterProfilePrefs(pref_service_.registry());
+    observer_ = std::make_unique<NiceMock<MockModelServiceObserver>>();
+  }
+
+  void TearDown() override {
+    OSCryptMocker::TearDown();
+    observer_.reset();
+    service_.reset();
+  }
+
+ protected:
+  void CreateServiceWithRemoteModels(const std::string& endpoint_url) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kAIChat,
+        {{features::kRemoteModelsEndpoint.name, endpoint_url},
+         {features::kRemoteModelsCacheTTLMinutes.name, "60"}});
+
+    service_ = std::make_unique<ModelService>(&pref_service_,
+                                               shared_url_loader_factory_);
+    observer_->Observe(service_.get());
+  }
+
+  void SimulateSuccessfulFetch(const std::string& url,
+                                const std::string& json_response) {
+    test_url_loader_factory_.AddResponse(url, json_response);
+  }
+
+  void SimulateHTTPError(const std::string& url, int http_code) {
+    test_url_loader_factory_.AddResponse(
+        url, "", static_cast<net::HttpStatusCode>(http_code));
+  }
+
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  TestingPrefServiceSimple pref_service_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<NiceMock<MockModelServiceObserver>> observer_;
+  std::unique_ptr<ModelService> service_;
+};
+
+TEST_F(ModelServiceRemoteModelsTest, UsesStaticModelsWhenEndpointEmpty) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kAIChat,
+      {{features::kRemoteModelsEndpoint.name, ""}});
+
+  service_ = std::make_unique<ModelService>(&pref_service_,
+                                             shared_url_loader_factory_);
+
+  task_environment_.RunUntilIdle();
+
+  // Should use static Leo models
+  const auto& models = service_->GetModels();
+  EXPECT_GT(models.size(), 0u);
+
+  // Verify it's a Leo model (not remote)
+  bool has_leo_model = false;
+  for (const auto& model : models) {
+    if (model->options->is_leo_model_options()) {
+      has_leo_model = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(has_leo_model);
+}
+
+TEST_F(ModelServiceRemoteModelsTest, FetchesRemoteModelsOnStartup) {
+  const char kEndpoint[] = "https://example.com/models";
+  const char kRemoteModelsJSON[] = R"({
+    "models": [{
+      "key": "remote-model-1",
+      "display_name": "Remote Model 1",
+      "vision_support": true,
+      "supports_tools": false,
+      "is_suggested_model": true,
+      "is_near_model": false,
+      "options": {
+        "type": "leo",
+        "name": "remote-model-1-api",
+        "display_maker": "Remote Provider",
+        "category": "chat",
+        "access": "basic",
+        "max_associated_content_length": 100000,
+        "long_conversation_warning_character_limit": 200000
+      }
+    }]
+  })";
+
+  SimulateSuccessfulFetch(kEndpoint, kRemoteModelsJSON);
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  task_environment_.RunUntilIdle();
+
+  // Should have fetched remote models
+  const auto& models = service_->GetModels();
+  ASSERT_GT(models.size(), 0u);
+
+  // Find the remote model
+  bool found_remote_model = false;
+  for (const auto& model : models) {
+    if (model->key == "remote-model-1") {
+      found_remote_model = true;
+      EXPECT_EQ("Remote Model 1", model->display_name);
+      EXPECT_TRUE(model->vision_support);
+      break;
+    }
+  }
+  EXPECT_TRUE(found_remote_model);
+}
+
+TEST_F(ModelServiceRemoteModelsTest, FallsBackToStaticOnNetworkError) {
+  const char kEndpoint[] = "https://example.com/models";
+
+  SimulateHTTPError(kEndpoint, 500);
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  task_environment_.RunUntilIdle();
+
+  // Should fall back to static Leo models
+  const auto& models = service_->GetModels();
+  EXPECT_GT(models.size(), 0u);
+
+  // Verify it's using Leo models (none with "remote" in key)
+  bool has_remote_model = false;
+  for (const auto& model : models) {
+    if (model->key.find("remote") != std::string::npos) {
+      has_remote_model = true;
+      break;
+    }
+  }
+  EXPECT_FALSE(has_remote_model);
+}
+
+TEST_F(ModelServiceRemoteModelsTest, LoadsCachedModelsFromPrefs) {
+  const char kEndpoint[] = "https://example.com/models";
+
+  // Manually populate prefs with cached remote models
+  base::Value::Dict cache;
+  base::Value::List models_list;
+
+  base::Value::Dict model1;
+  model1.Set("key", "cached-remote-model");
+  model1.Set("display_name", "Cached Remote Model");
+  model1.Set("vision_support", true);
+  model1.Set("supports_tools", false);
+  model1.Set("is_suggested_model", true);
+  model1.Set("is_near_model", false);
+
+  base::Value::Dict options1;
+  options1.Set("type", "leo");
+  options1.Set("name", "cached-remote-model-api");
+  options1.Set("display_maker", "Cached Provider");
+  options1.Set("category", "chat");
+  options1.Set("access", "basic");
+  options1.Set("max_associated_content_length", 100000);
+  options1.Set("long_conversation_warning_character_limit", 200000);
+  model1.Set("options", std::move(options1));
+
+  models_list.Append(std::move(model1));
+  cache.Set("models", std::move(models_list));
+  cache.Set("last_updated", base::Time::Now().InSecondsFSinceUnixEpoch());
+  cache.Set("endpoint_url", kEndpoint);
+
+  pref_service_.SetDict(prefs::kRemoteModelsCache, std::move(cache));
+
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  // Should load cached models immediately without network request
+  const auto& models = service_->GetModels();
+  ASSERT_GT(models.size(), 0u);
+
+  bool found_cached_model = false;
+  for (const auto& model : models) {
+    if (model->key == "cached-remote-model") {
+      found_cached_model = true;
+      EXPECT_EQ("Cached Remote Model", model->display_name);
+      break;
+    }
+  }
+  EXPECT_TRUE(found_cached_model);
+}
+
+TEST_F(ModelServiceRemoteModelsTest, RefreshRemoteModels) {
+  const char kEndpoint[] = "https://example.com/models";
+  const char kInitialModelsJSON[] = R"({
+    "models": [{
+      "key": "initial-model",
+      "display_name": "Initial Model",
+      "vision_support": true,
+      "supports_tools": false,
+      "is_suggested_model": true,
+      "is_near_model": false,
+      "options": {
+        "type": "leo",
+        "name": "initial-model-api",
+        "category": "chat",
+        "access": "basic",
+        "max_associated_content_length": 100000,
+        "long_conversation_warning_character_limit": 200000
+      }
+    }]
+  })";
+  const char kUpdatedModelsJSON[] = R"({
+    "models": [{
+      "key": "updated-model",
+      "display_name": "Updated Model",
+      "vision_support": false,
+      "supports_tools": true,
+      "is_suggested_model": true,
+      "is_near_model": false,
+      "options": {
+        "type": "leo",
+        "name": "updated-model-api",
+        "category": "chat",
+        "access": "premium",
+        "max_associated_content_length": 150000,
+        "long_conversation_warning_character_limit": 300000
+      }
+    }]
+  })";
+
+  SimulateSuccessfulFetch(kEndpoint, kInitialModelsJSON);
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  task_environment_.RunUntilIdle();
+
+  // Verify initial model loaded
+  {
+    const auto& models = service_->GetModels();
+    bool found_initial = false;
+    for (const auto& model : models) {
+      if (model->key == "initial-model") {
+        found_initial = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found_initial);
+  }
+
+  // Set up updated response
+  test_url_loader_factory_.ClearResponses();
+  SimulateSuccessfulFetch(kEndpoint, kUpdatedModelsJSON);
+
+  // Expect observer notification when models refresh
+  EXPECT_CALL(*observer_, OnModelListUpdated()).Times(testing::AtLeast(1));
+
+  // Trigger refresh
+  service_->RefreshRemoteModels();
+  task_environment_.RunUntilIdle();
+
+  // Verify updated model loaded
+  {
+    const auto& models = service_->GetModels();
+    bool found_updated = false;
+    bool found_initial = false;
+    for (const auto& model : models) {
+      if (model->key == "updated-model") {
+        found_updated = true;
+      }
+      if (model->key == "initial-model") {
+        found_initial = true;
+      }
+    }
+    EXPECT_TRUE(found_updated);
+    EXPECT_FALSE(found_initial);
+  }
+}
+
+TEST_F(ModelServiceRemoteModelsTest, IncludesCustomModelsWithRemoteModels) {
+  const char kEndpoint[] = "https://example.com/models";
+  const char kRemoteModelsJSON[] = R"({
+    "models": [{
+      "key": "remote-model",
+      "display_name": "Remote Model",
+      "vision_support": true,
+      "supports_tools": false,
+      "is_suggested_model": true,
+      "is_near_model": false,
+      "options": {
+        "type": "leo",
+        "name": "remote-model-api",
+        "category": "chat",
+        "access": "basic",
+        "max_associated_content_length": 100000,
+        "long_conversation_warning_character_limit": 200000
+      }
+    }]
+  })";
+
+  SimulateSuccessfulFetch(kEndpoint, kRemoteModelsJSON);
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  task_environment_.RunUntilIdle();
+
+  // Add a custom model
+  mojom::ModelPtr custom_model = mojom::Model::New();
+  custom_model->display_name = "My Custom Model";
+  custom_model->options = mojom::ModelOptions::NewCustomModelOptions(
+      mojom::CustomModelOptions::New(
+          "custom-model", 0, 0, 0, "", GURL("http://example.com"), ""));
+  service_->AddCustomModel(std::move(custom_model));
+
+  // Should have both remote and custom models
+  const auto& models = service_->GetModels();
+
+  bool found_remote = false;
+  bool found_custom = false;
+  for (const auto& model : models) {
+    if (model->key == "remote-model") {
+      found_remote = true;
+    }
+    if (model->key.find("custom:") == 0) {
+      found_custom = true;
+    }
+  }
+
+  EXPECT_TRUE(found_remote);
+  EXPECT_TRUE(found_custom);
+}
+
+TEST_F(ModelServiceRemoteModelsTest,
+       BackgroundRefreshWhenCacheStaleOnStartup) {
+  const char kEndpoint[] = "https://example.com/models";
+  const char kFreshModelsJSON[] = R"({
+    "models": [{
+      "key": "fresh-model",
+      "display_name": "Fresh Model",
+      "vision_support": false,
+      "supports_tools": true,
+      "is_suggested_model": true,
+      "is_near_model": false,
+      "options": {
+        "type": "leo",
+        "name": "fresh-model-api",
+        "category": "chat",
+        "access": "premium",
+        "max_associated_content_length": 150000,
+        "long_conversation_warning_character_limit": 300000
+      }
+    }]
+  })";
+
+  // Populate prefs with stale cache (62 minutes old)
+  base::Value::Dict cache;
+  base::Value::List models_list;
+
+  base::Value::Dict model1;
+  model1.Set("key", "stale-model");
+  model1.Set("display_name", "Stale Model");
+  model1.Set("vision_support", true);
+  model1.Set("supports_tools", false);
+  model1.Set("is_suggested_model", true);
+  model1.Set("is_near_model", false);
+
+  base::Value::Dict options1;
+  options1.Set("type", "leo");
+  options1.Set("name", "stale-model-api");
+  options1.Set("display_maker", "Stale Provider");
+  options1.Set("category", "chat");
+  options1.Set("access", "basic");
+  options1.Set("max_associated_content_length", 100000);
+  options1.Set("long_conversation_warning_character_limit", 200000);
+  model1.Set("options", std::move(options1));
+
+  models_list.Append(std::move(model1));
+  cache.Set("models", std::move(models_list));
+  // Set timestamp to 62 minutes ago (past TTL)
+  cache.Set("last_updated",
+            (base::Time::Now() - base::Minutes(62)).InSecondsFSinceUnixEpoch());
+  cache.Set("endpoint_url", kEndpoint);
+
+  pref_service_.SetDict(prefs::kRemoteModelsCache, std::move(cache));
+
+  // Set up fresh response for background refresh
+  SimulateSuccessfulFetch(kEndpoint, kFreshModelsJSON);
+
+  // Expect observer notification when background refresh completes
+  EXPECT_CALL(*observer_, OnModelListUpdated()).Times(testing::AtLeast(1));
+
+  CreateServiceWithRemoteModels(kEndpoint);
+
+  // Initially should use stale cache
+  {
+    const auto& models = service_->GetModels();
+    bool found_stale = false;
+    for (const auto& model : models) {
+      if (model->key == "stale-model") {
+        found_stale = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found_stale);
+  }
+
+  // Run background refresh
+  task_environment_.RunUntilIdle();
+
+  // After refresh, should have fresh models
+  {
+    const auto& models = service_->GetModels();
+    bool found_fresh = false;
+    bool found_stale = false;
+    for (const auto& model : models) {
+      if (model->key == "fresh-model") {
+        found_fresh = true;
+      }
+      if (model->key == "stale-model") {
+        found_stale = true;
+      }
+    }
+    EXPECT_TRUE(found_fresh);
+    EXPECT_FALSE(found_stale);
+  }
 }
 
 }  // namespace ai_chat
