@@ -278,6 +278,7 @@ test("brave_unit_tests") {
     "//chrome:strings",
     "//chrome/app:command_ids",
     "//chrome/browser/bookmarks",
+    "//chrome/browser/bookmarks:test_support",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/content_settings:content_settings_factory",
     "//chrome/browser/custom_handlers",
