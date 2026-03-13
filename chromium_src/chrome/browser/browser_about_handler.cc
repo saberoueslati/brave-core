@@ -3,27 +3,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "content/public/browser/browser_context.h"
+#include "content/public/common/url_constants.h"
+#include "url/gurl.h"
+
 #define HandleChromeAboutAndChromeSyncRewrite \
   HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl
 #include <chrome/browser/browser_about_handler.cc>
 #undef HandleChromeAboutAndChromeSyncRewrite
 
-#include "brave/components/constants/url_constants.h"
-#include "brave/components/constants/webui_url_constants.h"
-
 bool HandleChromeAboutAndChromeSyncRewrite(
     GURL* url,
     content::BrowserContext* browser_context) {
-  if (url->SchemeIs(kBraveUIScheme)) {
+  bool result = false;
+  if (url->SchemeIs(content::kBraveUIScheme)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     *url = url->ReplaceComponents(replacements);
     // We want both the real and virtual url to be chrome so rewrite both
-    return true;
+    result = true;
   }
 
-  bool result =
+  return result ||
       HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(url, browser_context);
-
-  return result;
 }

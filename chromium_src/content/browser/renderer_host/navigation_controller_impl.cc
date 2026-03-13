@@ -10,9 +10,11 @@ namespace {
 // Calling into the navigation controller directly doesn't hit
 // url_formatter::FixUpURL and the reverse rewrite doesn't handle all cases
 // either so as a fallback we always rewrite the virtual_url as chrome here
-void MaybeRewriteVirtualURL(GURL* url_to_load, GURL* virtual_url) {
-  if (url_to_load->SchemeIs("chrome")) {
-    *virtual_url = *url_to_load;
+void MaybeRewriteVirtualURL(GURL* virtual_url) {
+  if (virtual_url && virtual_url->SchemeIs("brave")) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr("chrome");
+    *virtual_url = virtual_url->ReplaceComponents(replacements);
   }
 }
 
