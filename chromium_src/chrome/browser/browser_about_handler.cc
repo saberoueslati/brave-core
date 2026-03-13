@@ -24,6 +24,6 @@ bool HandleChromeAboutAndChromeSyncRewrite(
     result = true;
   }
 
-  return result ||
-      HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(url, browser_context);
+  return result || HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(
+                       url, browser_context);
 }
