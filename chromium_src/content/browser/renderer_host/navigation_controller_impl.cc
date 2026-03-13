@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
 namespace {
@@ -11,9 +12,9 @@ namespace {
 // url_formatter::FixUpURL and the reverse rewrite doesn't handle all cases
 // either so as a fallback we always rewrite the virtual_url as chrome here
 void MaybeRewriteVirtualURL(GURL* virtual_url) {
-  if (virtual_url && virtual_url->SchemeIs("brave")) {
+  if (virtual_url && virtual_url->SchemeIs(content::kBraveUIScheme)) {
     GURL::Replacements replacements;
-    replacements.SetSchemeStr("chrome");
+    replacements.SetSchemeStr(content::kChromeUIScheme);
     *virtual_url = virtual_url->ReplaceComponents(replacements);
   }
 }
