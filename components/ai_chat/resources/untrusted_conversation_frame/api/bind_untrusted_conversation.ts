@@ -55,14 +55,11 @@ export async function bindUntrustedConversation() {
   )
 
   // Set initial state
-  // Emit the event instead of directly updating the store so that any custom
-  // handling (e.g. model filtering) happens and we don't need to duplicate
-  // here.
-  conversationAPI.api.emitEvent('onEntriesUIStateChanged', [
+  conversationAPI.conversationObserver.onEntriesUIStateChanged(
     conversationEntriesState,
-  ])
+  )
   // Set initial service state
-  conversationAPI.api.emitEvent('onStateChanged', [serviceState])
+  conversationAPI.serviceObserver.onStateChanged(serviceState)
 
   return {
     api: conversationAPI.api,

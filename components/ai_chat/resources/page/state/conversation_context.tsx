@@ -84,11 +84,6 @@ export function useProvideConversationContext(props: ConversationContextProps) {
   // Document-level and iframe drag handling
   useIsDragging({ setDragActive, setDragOver, clearDragState })
 
-  const [
-    showPremiumSuggestionForRegenerate,
-    setShowPremiumSuggestionForRegenerate,
-  ] = React.useState(false)
-
   const aiChat = useAIChat()
 
   const { api, selectedConversationId, updateSelectedConversationId } = props
@@ -340,24 +335,6 @@ export function useProvideConversationContext(props: ConversationContextProps) {
     conversationState.conversationUuid,
   ])
 
-  // TODO(petemill): rename to switchToNonPremiumModel as there are no longer
-  // a different in limitations between basic and freemium models.
-  const switchToBasicModel = () => {
-    if (showPremiumSuggestionForRegenerate) {
-      setShowPremiumSuggestionForRegenerate(false)
-      return
-    }
-    // Select the first non-premium model
-    const nonPremium = conversationState.allModels.find(
-      (m) => m.options.leoModelOptions?.access !== Mojom.ModelAccess.PREMIUM,
-    )
-    if (!nonPremium) {
-      console.error('Could not find a non-premium model!')
-      return
-    }
-    api.conversationHandler.changeModel(nonPremium.key)
-  }
-
   const handleResetError = async () => {
     const turn = await api.clearErrorAndGetFailedMessage()
     setInputText([turn.text])
@@ -527,11 +504,6 @@ export function useProvideConversationContext(props: ConversationContextProps) {
     setGeneratedUrlToBeOpened(url)
   }, [])
 
-  // Listen for showPremiumSuggestionForRegenerate requests from the child frame
-  aiChat.api.useShowPremiumSuggestionForRegenerate((isVisible) => {
-    setShowPremiumSuggestionForRegenerate(isVisible)
-  })
-
   // Listen for showSkillDialog requests from the child frame
   aiChat.api.useShowSkillDialog((prompt) => {
     aiChat.setSkillDialog({
@@ -659,7 +631,6 @@ export function useProvideConversationContext(props: ConversationContextProps) {
     isCurrentModelLeo,
     shouldShowLongConversationInfo,
     unassociatedTabs,
-    showPremiumSuggestionForRegenerate,
 
     dismissLongConversationInfo: () =>
       setHasDismissedLongConversationInfo(true),
@@ -674,7 +645,6 @@ export function useProvideConversationContext(props: ConversationContextProps) {
     resetSelectedActionType,
     handleActionTypeClick,
     submitInputTextToAPI,
-    switchToBasicModel,
     handleVoiceRecognition,
     setTemporary: (isTemporary: boolean) => {
       // Backend would check if the conversation has not yet started
