@@ -8,9 +8,8 @@
 
 namespace {
 
-// Calling into the navigation controller directly doesn't hit
-// url_formatter::FixUpURL and the reverse rewrite doesn't handle all cases
-// either so as a fallback we always rewrite the virtual_url as chrome here
+// We want to rewrite brave -> chrome, but without setting the virtual url to
+// brave
 void MaybeRewriteVirtualURL(GURL* virtual_url) {
   if (virtual_url && virtual_url->SchemeIs(content::kBraveUIScheme)) {
     GURL::Replacements replacements;
