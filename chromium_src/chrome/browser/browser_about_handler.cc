@@ -15,15 +15,12 @@
 bool HandleChromeAboutAndChromeSyncRewrite(
     GURL* url,
     content::BrowserContext* browser_context) {
-  bool result = false;
   if (url->SchemeIs(content::kBraveUIScheme)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     *url = url->ReplaceComponents(replacements);
-    // We want both the real and virtual url to be chrome so rewrite both
-    result = true;
   }
 
-  return result || HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(
+  return HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(
                        url, browser_context);
 }
