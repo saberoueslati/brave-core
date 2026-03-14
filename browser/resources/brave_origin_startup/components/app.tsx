@@ -4,7 +4,6 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import Icon from '@brave/leo/react/icon'
 import Button from '@brave/leo/react/button'
 import ProgressRing from '@brave/leo/react/progressRing'
 import { getLocale } from '$web-common/locale'
@@ -88,9 +87,10 @@ export function App({ handler }: AppProps) {
         data-verifying={verifying || undefined}
       >
         <div className='container'>
-          <Icon
-            name='social-brave-release-favicon-fullheight-color'
+          <img
+            src='/assets/Lion.svg'
             className='logo'
+            alt=''
           />
           <h1>{getLocale(S.BRAVE_ORIGIN_STARTUP_RESTORE_TITLE)}</h1>
           <div className='description'>
@@ -148,9 +148,10 @@ export function App({ handler }: AppProps) {
   return (
     <div className='brave-origin-startup'>
       <div className='container'>
-        <Icon
-          name='social-brave-release-favicon-fullheight-color'
+        <img
+          src='/assets/Lion.svg'
           className='logo'
+          alt=''
         />
         <h1>{getLocale(S.BRAVE_ORIGIN_STARTUP_TITLE)}</h1>
         <div className='description'>
@@ -159,7 +160,7 @@ export function App({ handler }: AppProps) {
         </div>
         <div className='buttons'>
           <Button
-            kind='outline'
+            kind='filled'
             onClick={onRestoreClick}
           >
             {getLocale(S.BRAVE_ORIGIN_STARTUP_RESTORE_BUTTON)}
