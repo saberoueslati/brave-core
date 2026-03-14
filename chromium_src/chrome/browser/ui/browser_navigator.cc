@@ -26,7 +26,16 @@ void MaybeOverridePopupDisposition(NavigateParams* params) {
   }
 }
 
+void UpdateBraveScheme(NavigateParams* params) {
+  if (params->url.SchemeIs(content::kBraveUIScheme)) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(content::kChromeUIScheme);
+    params->url = params->url.ReplaceComponents(replacements);
+  }
+}
+
 void UpdateParams(NavigateParams* params) {
+  UpdateBraveScheme(params);
   MaybeOverridePopupDisposition(params);
 }
 
