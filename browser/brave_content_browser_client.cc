@@ -333,25 +333,6 @@ using extensions::ChromeContentBrowserClientExtensionsPart;
 
 namespace {
 
-bool HandleURLReverseOverrideRewrite(GURL* url,
-                                     content::BrowserContext* browser_context) {
-  if (BraveContentBrowserClient::HandleURLOverrideRewrite(url,
-                                                          browser_context)) {
-    return true;
-  }
-
-  return false;
-}
-
-bool HandleURLRewrite(GURL* url, content::BrowserContext* browser_context) {
-  if (BraveContentBrowserClient::HandleURLOverrideRewrite(url,
-                                                          browser_context)) {
-    return true;
-  }
-
-  return false;
-}
-
 void BindCosmeticFiltersResourcesOnTaskRunner(
     mojo::PendingReceiver<cosmetic_filters::mojom::CosmeticFiltersResources>
         receiver) {
@@ -534,7 +515,7 @@ bool BraveContentBrowserClient::AreIsolatedWebAppsEnabled(
 
 void BraveContentBrowserClient::BrowserURLHandlerCreated(
     content::BrowserURLHandler* handler) {
-  handler->AddHandlerPair(&HandleURLRewrite, &HandleURLReverseOverrideRewrite);
+  handler->AddHandlerPair(&HandleURLOverrideRewrite, &HandleURLOverrideRewrite);
   ChromeContentBrowserClient::BrowserURLHandlerCreated(handler);
 }
 
