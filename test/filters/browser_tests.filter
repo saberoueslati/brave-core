@@ -84,9 +84,8 @@
 -LensOverlayControllerBrowserTest.EnterprisePolicy
 
 # Client side phishing detection is disabled in Brave
--PhishingClassifierDelegateTest.HasFlatBufferModel
--PhishingClassifierDelegateTest.HasVisualTfLiteModel
--PhishingClassifierDelegateTest.NoPhishingModel
+-All/PhishingClassifierDelegateTest.*/*
+-PhishingClassifierDelegateTest.*
 
 # This is only enabled for safe_browsing_mode == 2
 -ThreatDOMDetailsTest.CheckTagAndAttributeListIsSorted
@@ -205,6 +204,7 @@
 -All/ContextMenuBrowserTest.OpenInReadingMode/LinkPreview*
 -All/ContextMenuBrowserTest.ShowToastOnSidePanelContextMenus/LinkPreviewDisabled
 -All/ContextMenuBrowserTest.ShowToastOnSidePanelContextMenus/LinkPreviewEnabled
+-All/ReadAnythingOmniboxControllerBrowserTest.TabDetached_LogsNotOpenedAfterIPH/*
 -ReadAnythingApp*Test.*
 -ReadAnythingControllerBrowserTest.*
 -ReadAnythingReadAloudAppModelTest.*
@@ -521,6 +521,7 @@
 -AppControllerHandoffPrerenderBrowserTest.*
 -ContentSettingsWithPrerenderingBrowserTest.PrerenderingPageIframeSetsCookie
 -ContentSettingsWithPrerenderingBrowserTest.PrerenderingPageSetsCookie
+-DeclarativeNetRequestApiPrerenderingTest.PrerenderedPageInterception
 -DevToolsProtocolPrerenderTest.SetPrewarmingAllowed
 -EventPage/ExtensionBackForwardCacheWithPrerenderBrowserTest.PortIsStillOpenAfterPrerenderAndActivate/0
 -EventPageAndFalse/ExtensionBackForwardCacheWithPrerenderBrowserTest.PortIsStillOpenAfterPrerenderAndActivate/0
@@ -540,6 +541,7 @@
 -PreloadBookmarkBarPrefetchEnabledPrerenderEnabledNavigationTest.*
 -PreloadingConfigHoldbackSearchPreloadUnifiedBrowserTest.PrerenderDSEHoldbackTest
 -PrerenderDataSaverProtocolTest.CheckReportedDisabledByDataSaverPreloadingState
+-PrerenderFormSubmissionBrowserTest.HTTPFormActivation
 -PrerenderFormSubmissionBrowserTest.UseCounter
 -PrerenderUntilScriptBrowserTest.UseCounter
 -RealboxSearchPreloadBrowserTest.SearchPreloadSuccess
@@ -596,6 +598,7 @@
 -All/SafeBrowsingPrerenderBrowserTest.*
 -All/SafeBrowsingThreatDetailsPrerenderBrowserTest.*
 -All/SearchEngineTabHelperPrerenderingBrowserTest.*
+-All/SSLPrerenderTest.*/*
 -All/TranslateManagerPrerenderBrowserTest.*
 -All/WebUIContentsPreloadManagerBrowserSmokeTest.TriggerPreloadedUIs/*
 -AppBannerManagerPrerenderBrowserTest.*
@@ -1470,6 +1473,9 @@
 # identity_manager->AreRefreshTokensLoaded()
 -AccountSettingsPagePixelBrowserTest.*
 -All/AvatarToolbarButtonBrowserTestWithExplicitBrowserSignin.*/*
+-All/BookmarkBubbleViewShoppingCollectionBrowserTest.*/*
+-All/BrowserCommandControllerBrowserTestShowSigninWhenPaused.ExecuteShowSigninWhenPaused/ReplaceSyncPromosDisabled
+-All/BrowserCommandControllerBrowserTestShowSigninWhenPaused.ExecuteShowSigninWhenPaused/ReplaceSyncPromosEnabled
 -All/ForceSigninProfilePickerCreationFlowBrowserTest.ForceSignin*
 -All/GlicProfileManagerDidSelectProfileTest.DidSelectProfile_Consented/*
 -All/GlicProfileManagerDidSelectProfileTest.DidSelectProfile_NoConsent/*
@@ -1486,6 +1492,9 @@
 -AvatarToolbarButtonSyncPromoBrowserTest.HistorySyncOptinNotShownIfGreetingNotShown/*
 -AvatarToolbarButtonWithExplicitBrowserSigninBrowserTest.SigninPaused*
 -AvatarToolbarButtonWithWindows10DepreciationBrowserTest.ShowBatchUploadWindowsDepreciationPromo
+-BookmarkBubbleSignInDelegateTest.*
+-BookmarkBubbleViewBrowserTest.*
+-BookmarkBubbleViewMigrationBrowserTest.*
 -BookmarkEditorViewBrowserTestWithAccountBookmarks.InvokeUi_AccountAndLocalNodes
 -BookmarkEditorViewBrowserTestWithAccountBookmarks.InvokeUi_all_tabs
 -BookmarkEditorViewBrowserTestWithAccountBookmarks.InvokeUi_Default
@@ -2600,6 +2609,7 @@
 
 # These test fail because we override the default NTP shortcut type from "custom
 # links" to "most visited".
+-All/NewTabPageUtilTileTypesEnterpriseShortcutsBrowserTest.GetEnabledTileTypes/*
 -All/NewTabPageUtilTileTypesEnterpriseShortcutsDisabledBrowserTest.GetEnabledTileTypes/*
 -All/NewTabPageUtilTileTypesEnterpriseShortcutsEnabledAllowMixingBrowserTest.GetEnabledTileTypes/*
 -All/NewTabPageUtilTileTypesEnterpriseShortcutsEnabledNoMixingBrowserTest.GetEnabledTileTypes/*
@@ -2623,6 +2633,10 @@
 
 # These tests fail because we override blink::StorageEstimate::setQuota to set
 # the quota to 2147483648
+-IncognitoStaticStorageQuotaDisabledTest.IncognitoSession
+-IncognitoStaticStorageQuotaEnabledTest.IncognitoSession
+-StaticStorageQuotaFeatureDisabledTest.RegularSession
+-StaticStorageQuotaFeatureEnabledTest.RegularSession
 -StaticStorageQuotaPolicyFeatureDisabledTest.StaticStorageQuotaEnabled
 -StaticStorageQuotaPolicyFeatureEnabledTest.StaticStorageQuotaDisabled
 
@@ -2686,6 +2700,7 @@
 # this functionality appears
 -GlicInstanceCoordinatorBrowserTest.*
 -GlicInstanceCoordinatorTrustFirstOnboardingArm1BrowserTest.TabContentsDaisyChainingNotSuppressedWhenTrustFirstArm1Shown
+-GlicInstanceCoordinatorUnbindOnCloseTest.KeptBoundWhenInputSubmitted
 -GlicTabSubMenuModelTest.UnpinThenNavigateToOtherTabAndRemainsUnpinned
 -PdfViewerPrivateBrowserTestGlicEnabled.GlicSummarize
 
@@ -2699,6 +2714,7 @@
 # attempts to set Brave Search as the engine for the private window it can't
 # find the engine in the list and CHECKs.
 -PrepopulatedEnginesCrossRegionMigrationBrowserTest.*
+-PrepopulatedEnginesCrossRegionNoMigrationBrowserTest.*Dse/Feature*
 -PrepopulatedEnginesExtendedCrossRegionsBrowserTest.*Dse/Feature*
 -PrepopulatedEnginesMigrationBrowserTest.*
 -PrepopulatedEnginesXRegionMigrationBrowserTest.*
@@ -2803,8 +2819,6 @@
 -BackgroundTabLoadingBrowserTest.RestoreTab
 -BackgroundTabLoadingBrowserTest.RestoredTabsAreLoadedGradually
 -BookmarkBrowsertest.OpenAllBookmarks
--BookmarkBubbleSignInDelegateTest.*
--BookmarkBubbleViewBrowserTest.*
 -BreadcrumbManagerTabHelperBrowserTest.*
 -BrowserCloseManagerBrowserTest.*
 -BrowserNavigatorTest.*
@@ -3046,6 +3060,7 @@
 -IncognitoProfileMainNetworkContext/NetworkContextConfigurationManagedProxySettingsBrowserTest.*
 -IncognitoProfileMainNetworkContext/NetworkContextConfigurationProxyOnStartBrowserTest.*
 -IncognitoProfileMainNetworkContext/NetworkContextConfigurationProxySettingsBrowserTest.*
+-IndigoAgentBrowserTest.*
 -InspectUISharedStorageTest.*
 -InspectUITest.*
 -IntentChipButtonBrowserTest.*

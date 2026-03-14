@@ -172,6 +172,9 @@
 # that is overridden to add Brave's version bump.
 -TemplateURLPrepopulateDataUpdateRequirementsTest.ComputeDatabaseUpdateRequirements/UpToDateMetadataWithEngineMigration
 
+# These tests fail because we disable kAimEnabled
+-AimEligibilityServiceTest.*
+
 # Tests below this point have not been diagnosed or had issues created yet.
 -AccountInvestigatorTest.*
 -AccountReconcilorDiceTest.*
