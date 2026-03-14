@@ -739,15 +739,32 @@ class TabManager: NSObject {
 
     let tabs =
       Preferences.Privacy.persistentPrivateBrowsing.value ? allTabs : tabs(isPrivate: false)
-    SessionTab.updateAll(
-      synchronously: synchronously,
-      tabs: tabs.compactMap({
-        if let sessionData = $0.sessionData {
-          return ($0.id, sessionData, $0.title ?? "", $0.visibleURL ?? TabManager.ntpInteralURL)
-        }
-        return nil
-      })
-    )
+    let tabData = tabs.compactMap { tab -> (UUID, Bool, Data, String, URL)? in
+      guard let sessionData = tab.sessionData else { return nil }
+      return (
+        tab.id,
+        tab.isPrivate,
+        sessionData,
+        tab.title ?? "",
+        tab.visibleURL ?? TabManager.ntpInteralURL
+      )
+    }
+
+    if Preferences.Privacy.persistentPrivateBrowsing.value {
+      // Use createOrUpdateAll so private tabs (which may have no SessionTab record when
+      // "Keep Private Tabs" was just enabled) get created before updating.
+      SessionTab.createOrUpdateAll(
+        synchronously: synchronously,
+        windowId: windowId,
+        selectedTabId: selectedTab?.id,
+        tabs: tabData
+      )
+    } else {
+      SessionTab.updateAll(
+        synchronously: synchronously,
+        tabs: tabData.map { ($0.0, $0.2, $0.3, $0.4) }
+      )
+    }
   }
 
   func saveTab(_ tab: some TabState, saveOrder: Bool = false) {

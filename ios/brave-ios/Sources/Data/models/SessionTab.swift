@@ -229,6 +229,60 @@ extension SessionTab {
     }
   }
 
+  /// Creates SessionTab records for tabs that don't exist, then updates all. Used when "Keep Private Tabs"
+  /// is first enabled and private tabs (which were never persisted) need to be saved.
+  public static func createOrUpdateAll(
+    synchronously: Bool,
+    windowId: UUID,
+    selectedTabId: UUID?,
+    tabs: [(tabId: UUID, isPrivate: Bool, interactionState: Data, title: String, url: URL)]
+  ) {
+    DataController.perform(
+      context: synchronously ? .existing(DataController.viewContext) : .new(inMemory: false)
+    ) { context in
+      guard let window = SessionWindow.from(windowId: windowId, in: context) else { return }
+
+      for (index, tab) in tabs.enumerated() {
+        let sessionTab: SessionTab
+        if let existing = Self.from(tabId: tab.tabId, in: context) {
+          sessionTab = existing
+        } else {
+          sessionTab = SessionTab(
+            context: context,
+            sessionWindow: window,
+            sessionTabGroup: nil,
+            index: Int32(index),
+            interactionState: tab.interactionState,
+            isPrivate: tab.isPrivate,
+            isSelected: tab.tabId == selectedTabId,
+            lastUpdated: .now,
+            screenshotData: Data(),
+            title: tab.title,
+            url: tab.url,
+            tabId: tab.tabId
+          )
+        }
+        sessionTab.interactionState = tab.interactionState
+        sessionTab.title = tab.title
+        sessionTab.url = tab.url
+        sessionTab.index = Int32(index)
+        sessionTab.isSelected = tab.tabId == selectedTabId
+        sessionTab.lastUpdated = .now
+      }
+
+      // Update selection for all tabs in the window
+      let tabIds = Set(tabs.map(\.tabId))
+      window.sessionTabs?.forEach { tab in
+        let shouldSelect = tabIds.contains(tab.tabId) && tab.tabId == selectedTabId
+        tab.setValue(shouldSelect, forKey: #keyPath(SessionTab.isSelected))
+      }
+
+      if synchronously {
+        try? context.save()
+      }
+    }
+  }
+
   public static func purgeSessionData() {
     DataController.performOnMainContext { context in
       for tab in Self.all() {
