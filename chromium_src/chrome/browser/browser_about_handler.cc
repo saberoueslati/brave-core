@@ -21,6 +21,6 @@ bool HandleChromeAboutAndChromeSyncRewrite(
     *url = url->ReplaceComponents(replacements);
   }
 
-  return HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(
-                       url, browser_context);
+  return HandleChromeAboutAndChromeSyncRewrite_ChromiumImpl(url,
+                                                            browser_context);
 }
