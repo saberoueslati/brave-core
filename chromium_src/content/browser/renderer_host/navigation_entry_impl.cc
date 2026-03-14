@@ -3,9 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "content/browser/renderer_host/navigation_entry_impl.h"
+
 #include "base/check.h"
 #include "base/check_op.h"
-#include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/public/common/url_constants.h"
 
 #define SetVirtualURL SetVirtualURL_ChromiumImpl
