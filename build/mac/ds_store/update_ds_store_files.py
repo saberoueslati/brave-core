@@ -21,11 +21,13 @@ from uuid import uuid4
 
 def main():
     for brand, brand_suffix in (('Browser', ''), ('Origin', '.origin')):
+        bg_file = '../dmg-background-origin.png' if brand == 'Origin' \
+            else '../dmg-background.png'
         for channel in ('', 'Nightly', 'Beta', 'Release'):
             app_name = f'Brave {brand}' + (f' {channel}' if channel else '')
             suffix = f'.{channel.lower()}' if channel else ''
             ds_store = f'DS_Store{brand_suffix}{suffix}'
-            create_ds_store(app_name, '../dmg-background.png', ds_store)
+            create_ds_store(app_name, bg_file, ds_store)
 
 
 def create_ds_store(app_name, bg_file, ds_store_path):
