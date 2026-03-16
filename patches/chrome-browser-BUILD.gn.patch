@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
-index 589d635d17884050b20b491d65833b7893f5e3e6..114f7a9a9b62f0efcc14271041b670a88988294c 100644
+index a9f714b81ef83a2b7c3764d99cc8c55fa000e40b..b35288795a901803795427e9e3c6d269f3924838 100644
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -2509,6 +2509,7 @@ static_library("browser") {
+@@ -2456,6 +2456,7 @@ static_library("browser") {
    } else {
      sources += [ "net/net_error_diagnostics_dialog_stub.cc" ]
    }
@@ -10,8 +10,8 @@ index 589d635d17884050b20b491d65833b7893f5e3e6..114f7a9a9b62f0efcc14271041b670a8
  
    if (is_android) {
      sources += [
-@@ -8448,6 +8449,7 @@ static_library("browser_public_dependencies") {
-       "//rlz:rlz_lib",
+@@ -8376,6 +8377,7 @@ group("browser_public_dependencies") {
+       "//components/offline_pages/core/background:background_offliner",
      ]
    }
 +  import("//brave/browser/sources.gni") public_deps += brave_chrome_browser_public_deps
