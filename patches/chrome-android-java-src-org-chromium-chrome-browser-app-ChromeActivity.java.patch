@@ -1,5 +1,5 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java b/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
-index e8e655dfb0ddafcf9f5588c9be1e579521252451..6c104173f4ca15125ea8f32a7da0ee69728a0d2a 100644
+index eaac8c2d506fac7899cc18646c56ea4809b4b071..7fe5dd3a4947be16f231e2ab3585f2fba5a2cc83 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
 @@ -659,7 +659,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity

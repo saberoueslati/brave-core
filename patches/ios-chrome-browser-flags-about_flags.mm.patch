@@ -1,8 +1,8 @@
 diff --git a/ios/chrome/browser/flags/about_flags.mm b/ios/chrome/browser/flags/about_flags.mm
-index 7cb14f0a7c01cf2393af981487468d20d2c9bff6..6f2994e7d64c6647b208cedbdee6d70aab628b45 100644
+index 91659c53208d0c3324ae7780ca1cb791e0e8a705..99461cee3f373aec577967e1d4e8ee1ad6d0d134 100644
 --- a/ios/chrome/browser/flags/about_flags.mm
 +++ b/ios/chrome/browser/flags/about_flags.mm
-@@ -1389,6 +1389,7 @@ const FeatureEntry::FeatureVariation kAssistantContainerVariations[] = {
+@@ -1376,6 +1376,7 @@ const FeatureEntry::FeatureVariation kAssistantContainerVariations[] = {
  //
  // When adding a new choice, add it to the end of the list.
  constexpr auto kFeatureEntries = std::to_array<flags_ui::FeatureEntry>({

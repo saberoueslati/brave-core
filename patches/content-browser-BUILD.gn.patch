@@ -1,8 +1,8 @@
 diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
-index 3913f68ccd32442c16b50b7a48a1876da3061f3b..4ddcf45e9574fbef3826421c536efbd3e07dda36 100644
+index 6c20db955545b37cb1fd6fcc9b280aa1c7a14ae9..19e9acaf471f8821725fdb2951c53329659c8a89 100644
 --- a/content/browser/BUILD.gn
 +++ b/content/browser/BUILD.gn
-@@ -3756,6 +3756,7 @@ source_set("browser") {
+@@ -3754,6 +3754,7 @@ source_set("browser") {
        "surface_embed/surface_embed_connector_impl.h",
      ]
    }
