@@ -929,6 +929,12 @@ Brave is unable to recover your settings.
         <message name="IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_REMOVE_BUTTON_ACC_LABEL" desc="The (accessible) label for the button to remove an extension.">
           Remove <ph name="EXTENSION_NAME">$1<ex>Brave Translate</ex></ph> from Brave
         </message>
+        <message name="IDS_EXTENSIONS_MENU_ZERO_STATE_DESC" desc="Description in the Extensions Menu when there are no extensions installed." formatter_data="android_java">
+          Extensions are add-ons that let you customize Brave. From staying organized, to simplifying everyday tasks, extensions help you make Brave your own.
+        </message>
+        <message name="IDS_OPEN_WEB_STORE_BUTTON_TEXT" desc="Text for the open Web Store button." formatter_data="android_java">
+          Open Web Store
+        </message>
       </if>
 
       <!-- Extension Safety Check Detail Page strings -->
@@ -2818,7 +2824,7 @@ Brave is unable to recover your settings.
       <message name="IDS_GLIC_PROMO_TITLE" desc="Glic promo title." translateable="false">
         Try Gemini in Brave
       </message>
-      <message name="IDS_GLIC_TAB_STRIP_BUTTON_TOOLTIP" translateable="false" desc="This is the tooltip shown when hovering over the glic entry button in the tab strip while the Glic window is closed.">
+      <message name="IDS_GLIC_TAB_STRIP_BUTTON_TOOLTIP" translateable="false" desc="This is the tooltip shown when hovering over the glic entry button in the tab strip while the Glic window is closed." formatter_data="android_java">
         Open Gemini in Brave
       </message>
       <message name="IDS_GLIC_TAB_STRIP_BUTTON_TOOLTIP_CLOSE" translateable="false" desc="This is the tooltip shown when hovering over the glic entry button in the tab strip while the Glic window is open.">
