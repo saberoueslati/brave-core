@@ -1,0 +1,17 @@
+diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
+index 8c6e66e4d3535375cfe532d61038522fd4938fe2..14ad71a2079bc38127d8ae4dbd3445e378dad4de 100644
+--- a/content/browser/renderer_host/render_process_host_impl.cc
++++ b/content/browser/renderer_host/render_process_host_impl.cc
+@@ -4645,6 +4645,12 @@ RenderProcessHost::FilterURLResult RenderProcessHostImpl::FilterURL(
+     return FilterURLResult::kBlocked;
+   }
+ 
++  if (url->SchemeIs(content::kBraveUIScheme)) {
++    GURL::Replacements replacements;
++    replacements.SetSchemeStr(content::kChromeUIScheme);
++    *url = url->ReplaceComponents(replacements);
++  }
++
+   ChildProcessSecurityPolicyImpl* policy =
+       ChildProcessSecurityPolicyImpl::GetInstance();
+   if (!policy->CanRequestURL(rph->GetDeprecatedID(), *url)) {
